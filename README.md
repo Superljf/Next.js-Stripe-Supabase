@@ -9,7 +9,9 @@
 - Secure user management and authentication with [Supabase](https://supabase.io/docs/guides/auth)
 - Powerful data access & management tooling on top of PostgreSQL with [Supabase](https://supabase.io/docs/guides/database)
 - Integration with [Stripe Checkout](https://stripe.com/docs/payments/checkout) and the [Stripe customer portal](https://stripe.com/docs/billing/subscriptions/customer-portal)
+- Integration with [WeChat Pay](https://pay.weixin.qq.com/) for Chinese users
 - Automatic syncing of pricing plans and subscription statuses via [Stripe webhooks](https://stripe.com/docs/webhooks)
+- Automatic syncing of payment statuses via [WeChat Pay webhooks](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_5.shtml)
 
 ## Demo
 
@@ -110,6 +112,19 @@ Optionally, to speed up the setup, we have added a [fixtures file](fixtures/stri
 1. Toggle on "Allow customers to cancel subscriptions"
 1. Add the products and prices that you want
 1. Set up the required business information and links
+
+### Configure WeChat Pay
+
+For Chinese users, you can also configure [WeChat Pay](https://pay.weixin.qq.com/) as an alternative payment method.
+
+1. Register as a WeChat Pay merchant
+2. Obtain the following credentials from the WeChat Pay merchant platform:
+   - App ID
+   - Merchant ID
+   - Private Key
+   - Certificate Serial Number
+   - APIv3 Key
+3. Add these credentials to your environment variables
 
 ### That's it
 
@@ -243,6 +258,14 @@ pnpm dev
 Note that webhook forwarding and the development server must be running concurrently in two separate terminals for the application to work correctly.
 
 Finally, navigate to [http://localhost:3000](http://localhost:3000) in your browser to see the application rendered.
+
+## Payment Options
+
+This application supports two payment methods:
+1. **Stripe** - For international users
+2. **WeChat Pay** - For Chinese users
+
+Users can choose their preferred payment method during checkout.
 
 ## Going live
 

@@ -5,6 +5,7 @@ import LogoCloud from '@/components/ui/LogoCloud';
 import type { Tables } from '@/types_db';
 import { getStripe } from '@/utils/stripe/client';
 import { checkoutWithStripe } from '@/utils/stripe/server';
+// import { checkoutWithWeChatPay } from '@/utils/wechatpay/server'; // 添加微信支付导入
 import { getErrorRedirect } from '@/utils/helpers';
 import { User } from '@supabase/supabase-js';
 import cn from 'classnames';
@@ -45,6 +46,8 @@ export default function Pricing({ user, products, subscription }: Props) {
     useState<BillingInterval>('month');
   const [priceIdLoading, setPriceIdLoading] = useState<string>();
   const currentPath = usePathname();
+  // const [showWeChatPayQR, setShowWeChatPayQR] = useState(false);
+  // const [wechatPayQRCode, setWechatPayQRCode] = useState('');
 
   const handleStripeCheckout = async (price: Price) => {
     setPriceIdLoading(price.id);
@@ -80,6 +83,36 @@ export default function Pricing({ user, products, subscription }: Props) {
 
     setPriceIdLoading(undefined);
   };
+
+  // 添加微信支付处理函数 (暂时注释掉)
+  /*
+  const handleWeChatPayCheckout = async (price: Price) => {
+    setPriceIdLoading(price.id);
+
+    if (!user) {
+      setPriceIdLoading(undefined);
+      return router.push('/signin/signup');
+    }
+
+    const { errorRedirect, codeUrl } = await checkoutWithWeChatPay(
+      price,
+      currentPath
+    );
+
+    if (errorRedirect) {
+      setPriceIdLoading(undefined);
+      return router.push(errorRedirect);
+    }
+
+    if (codeUrl) {
+      // 显示二维码模态框
+      setWechatPayQRCode(codeUrl);
+      setShowWeChatPayQR(true);
+    }
+
+    setPriceIdLoading(undefined);
+  };
+  */
 
   if (!products.length) {
     return (
@@ -182,15 +215,29 @@ export default function Pricing({ user, products, subscription }: Props) {
                         /{billingInterval}
                       </span>
                     </p>
-                    <Button
-                      variant="slim"
-                      type="button"
-                      loading={priceIdLoading === price.id}
-                      onClick={() => handleStripeCheckout(price)}
-                      className="block w-full py-2 mt-8 text-sm font-semibold text-center text-white rounded-md hover:bg-zinc-900"
-                    >
-                      {subscription ? 'Manage' : 'Subscribe'}
-                    </Button>
+                    <div className="flex flex-col gap-2 mt-8">
+                      <Button
+                        variant="slim"
+                        type="button"
+                        loading={priceIdLoading === price.id}
+                        onClick={() => handleStripeCheckout(price)}
+                        className="block w-full py-2 text-sm font-semibold text-center text-white rounded-md hover:bg-zinc-900"
+                      >
+                        {subscription ? 'Manage with Stripe' : 'Subscribe with Stripe'}
+                      </Button>
+                      {/* 注释掉微信支付按钮 */}
+                      {/* 
+                      <Button
+                        variant="slim"
+                        type="button"
+                        loading={priceIdLoading === price.id}
+                        onClick={() => handleWeChatPayCheckout(price)}
+                        className="block w-full py-2 text-sm font-semibold text-center text-white rounded-md hover:bg-zinc-900"
+                      >
+                        {subscription ? 'Manage with WeChat Pay' : 'Subscribe with WeChat Pay'}
+                      </Button>
+                      */}
+                    </div>
                   </div>
                 </div>
               );
@@ -198,6 +245,33 @@ export default function Pricing({ user, products, subscription }: Props) {
           </div>
           <LogoCloud />
         </div>
+
+        {/* 注释掉微信支付二维码模态框 */}
+        {/* 
+        {showWeChatPayQR && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg">
+              <h3 className="text-lg font-bold mb-4">微信支付</h3>
+              <div className="flex justify-center">
+                {wechatPayQRCode ? (
+                  <img src={wechatPayQRCode} alt="WeChat Pay QR Code" className="w-48 h-48" />
+                ) : (
+                  <div className="w-48 h-48 flex items-center justify-center bg-gray-200">
+                    加载中...
+                  </div>
+                )}
+              </div>
+              <p className="text-center mt-4">请使用微信扫描二维码完成支付</p>
+              <button
+                onClick={() => setShowWeChatPayQR(false)}
+                className="mt-4 w-full py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+              >
+                关闭
+              </button>
+            </div>
+          </div>
+        )}
+        */}
       </section>
     );
   }
