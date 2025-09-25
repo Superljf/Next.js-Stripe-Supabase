@@ -73,6 +73,28 @@
 
 项目支持通过 Vercel 一键部署，集成 Supabase Vercel 部署工具，可以自动设置环境变量和数据库迁移。这个项目非常适合需要快速搭建订阅支付系统的开发者，提供了完整的基础设施和最佳实践。
 
+## 快速启动（跳过配置）
+
+如果你只想快速查看前端界面，而不想配置 Supabase 和 Stripe：
+
+1. 安装依赖：
+   ```bash
+   pnpm install
+   ```
+
+2. 创建基础环境变量文件：
+   ```bash
+   echo "NEXT_PUBLIC_SITE_URL=http://localhost:3000" > .env.local
+   ```
+
+3. 启动开发服务器：
+   ```bash
+   pnpm dev
+   ```
+
+4. 在浏览器中访问 http://localhost:3000
+
+注意：此方式下用户认证和支付功能将不可用，但你可以查看大部分 UI 界面。
 
 ## 启动项目步骤
 
