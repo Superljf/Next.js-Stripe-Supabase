@@ -13,6 +13,8 @@ Next.js-Stripe-Supabase/
 │   ├── api/               # API 路由
 │   │   └── webhooks/      # Webhook 处理
 │   ├── auth/              # 认证相关页面
+│   ├── resources/         # 资源管理页面
+│   │   └── public/        # 公共资源页面
 │   ├── signin/            # 登录/注册页面
 │   └── ...                # 其他页面和布局文件
 ├── components/            # React 组件
@@ -42,6 +44,10 @@ Next.js-Stripe-Supabase/
     - `route.ts` - Stripe webhook 处理器
     - `wechat/` - 微信支付 webhook 处理器
 - `auth/` - 认证相关页面 (回调、确认等)
+- `resources/` - 资源管理页面
+  - `page.tsx` - 资源管理主页（需要登录）
+  - `public/` - 公共资源页面
+    - `page.tsx` - 公共资源列表页面
 - `signin/` - 登录和注册页面
 - `layout.tsx` - 应用根布局
 - `page.tsx` - 首页 (定价页面)
@@ -92,6 +98,150 @@ Next.js-Stripe-Supabase/
 - `seed.sql` - 数据库种子数据
 - `config.toml` - Supabase CLI 配置
 
+## 路由配置 (Next.js App Router)
+
+Next.js 14 使用基于文件系统的路由，文件路径直接映射到路由路径。
+
+### 基本路由
+
+在 `app/` 目录下创建文件夹和文件来定义路由：
+
+```
+app/
+├── page.tsx          → /
+├── about/
+│   └── page.tsx      → /about
+├── dashboard/
+│   └── page.tsx      → /dashboard
+├── products/
+│   ├── page.tsx      → /products
+│   └── [id]/
+│       └── page.tsx  → /products/123
+└── blog/
+    ├── page.tsx      → /blog
+    └── [slug]/
+        └── page.tsx  → /blog/my-post
+```
+
+### 添加新页面的步骤
+
+1. **创建页面文件夹**（可选）
+   - 在 `app/` 目录下创建新文件夹，文件夹名称即为路由路径
+   - 例如，创建 `app/dashboard/` 文件夹
+
+2. **创建页面文件**
+   - 在相应目录下创建 `page.tsx` 文件
+   - 这是页面的入口文件
+
+3. **页面文件基本结构**
+   ```tsx
+   // app/dashboard/page.tsx
+   export default function DashboardPage() {
+     return (
+       <div>
+         <h1>Dashboard</h1>
+         <p>Welcome to your dashboard!</p>
+       </div>
+     );
+   }
+   ```
+
+### 动态路由
+
+使用方括号 `[]` 创建动态路由：
+
+```
+app/
+└── users/
+    ├── page.tsx        → /users
+    └── [id]/
+        └── page.tsx    → /users/123
+```
+
+在页面中获取动态参数：
+
+```tsx
+// app/users/[id]/page.tsx
+import { notFound } from 'next/navigation';
+
+export default function UserPage({ params }: { params: { id: string } }) {
+  // 获取用户数据
+  const user = getUserById(params.id);
+  
+  if (!user) {
+    notFound();
+  }
+  
+  return (
+    <div>
+      <h1>User: {user.name}</h1>
+      <p>ID: {params.id}</p>
+    </div>
+  );
+}
+```
+
+### 路由组
+
+使用括号 `()` 创建路由组，用于组织文件但不影响 URL：
+
+```
+app/
+├── (marketing)/
+│   ├── page.tsx          → /
+│   └── about/
+│       └── page.tsx      → /about
+└── (dashboard)/
+    └── dashboard/
+        └── page.tsx      → /dashboard
+```
+
+### 平行路由
+
+使用 `@` 符号创建平行路由，用于高级路由模式：
+
+```
+app/
+├── layout.tsx
+├── page.tsx
+├── @modal/
+│   └── (.)dashboard/
+│       └── settings/
+│           └── page.tsx
+└── dashboard/
+    └── settings/
+        └── page.tsx
+```
+
+### API 路由
+
+在 `app/api/` 目录下创建 API 路由：
+
+```ts
+// app/api/users/route.ts
+import { NextResponse } from 'next/server';
+
+export async function GET() {
+  const users = await getUsers();
+  return NextResponse.json({ users });
+}
+
+export async function POST(request: Request) {
+  const data = await request.json();
+  const user = await createUser(data);
+  return NextResponse.json({ user });
+}
+```
+
+支持的 HTTP 方法：
+- `GET` - 获取资源
+- `POST` - 创建资源
+- `PUT` - 更新资源
+- `PATCH` - 部分更新资源
+- `DELETE` - 删除资源
+- `HEAD` - 获取资源头部信息
+- `OPTIONS` - 获取支持的 HTTP 方法
+
 ## 核心功能模块
 
 ### 1. 用户认证系统
@@ -116,7 +266,15 @@ Next.js-Stripe-Supabase/
 - 支付状态同步
 - Webhook 处理
 
-### 3. 数据库设计
+### 3. 资源管理系统
+
+新添加的资源管理系统包含以下功能：
+- 资源列表管理（添加、编辑、删除）
+- 资源分享页面
+- 一键复制资源链接
+- 响应式设计
+
+### 4. 数据库设计
 
 使用 Supabase (PostgreSQL) 存储：
 
@@ -126,6 +284,7 @@ Next.js-Stripe-Supabase/
 - `products` - 产品信息 (来自 Stripe)
 - `prices` - 价格信息 (来自 Stripe)
 - `subscriptions` - 订阅信息 (来自 Stripe)
+- `resources` - 用户分享的资源信息
 
 #### 安全策略
 - 行级安全 (RLS) 策略
